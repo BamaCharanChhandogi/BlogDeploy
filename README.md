@@ -1,50 +1,159 @@
-# Building a Remote MCP Server on Cloudflare (Without Auth)
+# Blog Deploy MCP Server
 
-This example allows you to deploy a remote MCP server that doesn't require authentication on Cloudflare Workers. 
+A Model Context Protocol (MCP) server for publishing blog posts to multiple platforms simultaneously. Deploy your content to Hashnode, Dev.to, and more with a single command.
 
-## Get started: 
+## Features
 
-[![Deploy to Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cloudflare/ai/tree/main/demos/remote-mcp-authless)
+- 🚀 **Multi-Platform Publishing**: Publish to multiple blogging platforms at once
+- 🔐 **Secure Token Storage**: Tokens are securely stored in Cloudflare KV
+- 📝 **Markdown Support**: Write your posts in Markdown format
+- ⚡ **Cloudflare Workers**: Fast, edge-deployed MCP server
+- 🔄 **Easy Integration**: Works seamlessly with Claude Desktop and other MCP clients
 
-This will deploy your MCP server to a URL like: `remote-mcp-server-authless.<your-account>.workers.dev/sse`
+## Supported Platforms
 
-Alternatively, you can use the command line below to get the remote MCP Server created on your local machine:
+- ✅ **Hashnode** - Developer blogging platform
+- ✅ **Dev.to** - Community-driven developer platform
+- 🔜 More platforms coming soon!
+
+## Quick Start
+
+### 1. Deploy to Cloudflare Workers
+
+Deploy your MCP server to Cloudflare Workers:
+
 ```bash
-npm create cloudflare@latest -- my-mcp-server --template=cloudflare/ai/demos/remote-mcp-authless
+npm run deploy
 ```
 
-## Customizing your MCP Server
+This will deploy your server to: `https://blog-deploy-mcp.<your-account>.workers.dev`
 
-To add your own [tools](https://developers.cloudflare.com/agents/model-context-protocol/tools/) to the MCP server, define each tool inside the `init()` method of `src/index.ts` using `this.server.tool(...)`. 
+### 2. Configure MCP Client
 
-## Connect to Cloudflare AI Playground
+Update your MCP client configuration (e.g., Claude Desktop) to connect to your deployed server:
 
-You can connect to your MCP server from the Cloudflare AI Playground, which is a remote MCP client:
-
-1. Go to https://playground.ai.cloudflare.com/
-2. Enter your deployed MCP server URL (`remote-mcp-server-authless.<your-account>.workers.dev/sse`)
-3. You can now use your MCP tools directly from the playground!
-
-## Connect Claude Desktop to your MCP server
-
-You can also connect to your remote MCP server from local MCP clients, by using the [mcp-remote proxy](https://www.npmjs.com/package/mcp-remote). 
-
-To connect to your MCP server from Claude Desktop, follow [Anthropic's Quickstart](https://modelcontextprotocol.io/quickstart/user) and within Claude Desktop go to Settings > Developer > Edit Config.
-
-Update with this configuration:
+**For Claude Desktop** (`~/.cursor/mcp.json` or Claude Desktop config):
 
 ```json
 {
   "mcpServers": {
-    "calculator": {
-      "command": "npx",
+    "blog-deploy-mcp": {
+      "command": "mcp-remote",
       "args": [
-        "mcp-remote",
-        "http://localhost:8787/sse"  // or remote-mcp-server-authless.your-account.workers.dev/sse
+        "https://blog-deploy-mcp.<your-account>.workers.dev/mcp"
       ]
     }
   }
 }
 ```
 
-Restart Claude and you should see the tools become available. 
+Replace `<your-account>` with your Cloudflare account subdomain.
+
+### 3. Set Platform Tokens
+
+Before publishing, set your API tokens for each platform:
+
+```
+setPlatformToken(platform: "hashnode", token: "your-hashnode-token")
+setPlatformToken(platform: "devto", token: "your-devto-api-key")
+```
+
+### 4. Publish Your First Post
+
+Publish a blog post to one or more platforms:
+
+```
+publishPost(
+  title: "My First Blog Post",
+  contentMarkdown: "# Hello World\n\nThis is my first post!",
+  platforms: ["hashnode", "devto"]
+)
+```
+
+## Available Tools
+
+### `setPlatformToken`
+
+Save API tokens for blogging platforms.
+
+**Parameters:**
+- `platform` (string): Platform name (e.g., "hashnode", "devto")
+- `token` (string): API token for the platform
+
+**Example:**
+```
+setPlatformToken(platform: "hashnode", token: "your-token-here")
+```
+
+### `publishPost`
+
+Publish a blog post to one or more platforms simultaneously.
+
+**Parameters:**
+- `title` (string): Blog post title
+- `contentMarkdown` (string): Blog post content in Markdown format
+- `platforms` (array): List of platforms to publish to (e.g., ["hashnode", "devto"])
+
+**Example:**
+```
+publishPost(
+  title: "Getting Started with TypeScript",
+  contentMarkdown: "# Getting Started\n\nTypeScript is awesome!",
+  platforms: ["hashnode"]
+)
+```
+
+## Getting API Tokens
+
+### Hashnode
+
+1. Go to [Hashnode Settings](https://hashnode.com/settings)
+2. Navigate to **API** section
+3. Generate a new Personal Access Token
+4. Copy the token and use it with `setPlatformToken`
+
+### Dev.to
+
+1. Go to [Dev.to Settings](https://dev.to/settings/extensions)
+2. Scroll to **DEV Community API Keys** section
+3. Generate a new API key
+4. Copy the key and use it with `setPlatformToken`
+
+## Local Development
+
+Run the server locally for testing:
+
+```bash
+npm run dev
+```
+
+The server will be available at `http://localhost:8787`
+
+## Project Structure
+
+```
+BlogDeploy/
+├── src/
+│   ├── index.ts              # Main MCP server implementation
+│   ├── config.ts             # Configuration management
+│   ├── platforms/            # Platform-specific implementations
+│   │   ├── hashnode/
+│   │   ├── devto/
+│   │   └── base/
+│   └── publisher/
+│       └── PlatformManager.ts
+├── wrangler.jsonc           # Cloudflare Workers configuration
+└── package.json
+```
+
+## Environment Setup
+
+The server uses Cloudflare KV for storing platform tokens securely. Make sure your `wrangler.jsonc` is configured with the KV namespace binding.
+
+## Contributing
+
+Want to add support for more platforms? Check out the `platforms/` directory and follow the existing platform implementations.
+
+## License
+
+MIT
