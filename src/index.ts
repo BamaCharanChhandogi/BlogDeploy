@@ -6,7 +6,7 @@ import { loadConfig, saveConfig } from "./config.js";
 
 export class MyMCP extends McpAgent {
   server = new McpServer({
-    name: "blog-deploy-mcp",
+    name: "blogcaster-mcp",
     version: "0.1.0",
   });
 
