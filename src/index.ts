@@ -2,7 +2,7 @@ import { McpAgent } from "agents/mcp";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { PlatformManager } from "./publisher/PlatformManager.js";
-import { loadConfig, saveConfig } from "./config.js";
+import { loadConfigFromStorage, saveConfigToStorage } from "./config.js";
 
 export class MyMCP extends McpAgent {
   server = new McpServer({
@@ -10,10 +10,12 @@ export class MyMCP extends McpAgent {
     version: "0.1.0",
   });
 
+  private doState: DurableObjectState;
   private kv?: KVNamespace;
 
   constructor(state: DurableObjectState, env: any) {
     super(state, env);
+    this.doState = state;
     this.kv = env.BlogMCP;
   }
 
@@ -23,6 +25,7 @@ export class MyMCP extends McpAgent {
     }
 
     // Save API token for any blogging platform
+    // Uses Durable Object storage to ensure tokens are isolated per user/instance
     this.server.tool(
       "setPlatformToken",
       {
@@ -30,29 +33,29 @@ export class MyMCP extends McpAgent {
         token: z.string().describe("API token for the platform"),
       },
       async ({ platform, token }) => {
-        if (!this.kv) {
+        if (!this.doState?.storage) {
           return {
             content: [
-              { type: "text", text: "❌ Error: KV namespace not configured." }
+              { type: "text", text: "Error: Durable Object storage not available." }
             ]
           };
         }
 
         try {
-          const config = await loadConfig(this.kv);
+          const config = await loadConfigFromStorage(this.doState.storage);
           config.tokens = config.tokens || {};
           config.tokens[platform] = token;
-          await saveConfig(config, this.kv);
+          await saveConfigToStorage(config, this.doState.storage);
 
           return {
             content: [
-              { type: "text", text: `✅ Token saved successfully for platform: ${platform}` }
+              { type: "text", text: `Token saved successfully for platform: ${platform}` }
             ]
           };
         } catch (err: any) {
           return {
             content: [
-              { type: "text", text: `❌ Error saving token: ${err.message}` }
+              { type: "text", text: ` Error saving token: ${err.message}` }
             ]
           };
         }
@@ -68,16 +71,17 @@ export class MyMCP extends McpAgent {
         platforms: z.array(z.string()).describe("List of platforms to publish to (e.g., ['hashnode', 'devto'])"),
       },
       async ({ title, contentMarkdown, platforms }) => {
-        if (!this.kv) {
+        if (!this.doState?.storage) {
           return {
             content: [
-              { type: "text", text: "❌ Error: KV namespace not configured." }
+              { type: "text", text: " Error: Durable Object storage not available." }
             ]
           };
         }
 
         try {
-          const config = await loadConfig(this.kv);
+          // Load tokens from Durable Object storage (isolated per user/instance)
+          const config = await loadConfigFromStorage(this.doState.storage);
           config.tokens = config.tokens || {};
 
           const results: any[] = [];
