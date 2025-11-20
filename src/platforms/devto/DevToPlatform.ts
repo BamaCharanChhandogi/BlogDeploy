@@ -26,6 +26,7 @@ export class DevToPlatform implements BlogPlatform {
 			input.title,
 			input.contentMarkdown,
 			input.tags || [],
+			input.coverImageURL,
 		);
 		return {
 			id: String(data.id),

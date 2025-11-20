@@ -6,7 +6,18 @@ export async function postToDevto(
 	title: string,
 	bodyMarkdown: string,
 	tags: string[] = [],
+	coverImageURL?: string,
 ) {
+	const article: any = {
+		title,
+		body_markdown: bodyMarkdown,
+		published: true,
+		tags,
+	};
+	if (coverImageURL) {
+		article.main_image = coverImageURL;
+	}
+	
 	const res = await fetch(DEVTO_ENDPOINT, {
 		method: "POST",
 		headers: {
@@ -14,14 +25,7 @@ export async function postToDevto(
 			"api-key": apiKey,
 			"User-Agent": "MyApp/1.0"
 		},
-		body: JSON.stringify({
-			article: {
-				title,
-				body_markdown: bodyMarkdown,
-				published: true,
-				tags,
-			},
-		}),
+		body: JSON.stringify({ article }),
 	});
 
 	if (!res.ok) {

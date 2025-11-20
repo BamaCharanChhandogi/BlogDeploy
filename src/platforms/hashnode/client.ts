@@ -14,7 +14,7 @@ export async function callHashnode(
 		body: JSON.stringify({ query, variables }),
 	});
 
-	const data = await res.json();
+	const data = await res.json() as { errors?: any[]; data?: any };
 	if (data.errors) throw new Error(JSON.stringify(data.errors, null, 2));
 	return data.data;
 }

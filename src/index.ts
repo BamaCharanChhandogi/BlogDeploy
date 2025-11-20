@@ -70,8 +70,9 @@ export class MyMCP extends McpAgent {
         title: z.string().describe("Blog post title"),
         contentMarkdown: z.string().describe("Blog post content in Markdown format"),
         platforms: z.array(z.string()).describe("List of platforms to publish to (e.g., ['hashnode', 'devto'])"),
+        coverImageURL: z.string().optional().describe("Optional cover image URL for the blog post"),
       },
-      async ({ title, contentMarkdown, platforms }) => {
+      async ({ title, contentMarkdown, platforms, coverImageURL }) => {
         if (!this.doState?.storage) {
           return {
             content: [
@@ -114,14 +115,22 @@ export class MyMCP extends McpAgent {
 
               const result = await platform.publishPost(token, {
                 title,
-                contentMarkdown
+                contentMarkdown,
+                coverImageURL
               });
 
-              results.push({
+              const resultEntry: any = {
                 platform: platformName,
                 success: true,
                 result
-              });
+              };
+
+              // Add warning if cover image is provided for Hashnode
+              if (coverImageURL && platformName === "hashnode") {
+                resultEntry.warning = "Hashnode does not support cover images. The cover image was ignored for this post.";
+              }
+
+              results.push(resultEntry);
             } catch (err: any) {
               results.push({
                 platform: platformName,

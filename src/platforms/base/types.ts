@@ -2,6 +2,7 @@ export interface PostInput {
 	title: string;
 	contentMarkdown: string;
 	tags?: string[];
+	coverImageURL?: string;
 }
 
 export interface PublishResult {
