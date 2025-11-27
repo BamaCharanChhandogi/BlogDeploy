@@ -63,6 +63,23 @@ Restart Claude Desktop
 
 Claude will now detect BlogCaster MCP automatically
 
+---
+
+## Exact MCP Servers JSON
+
+Use the exact JSON below if your tool requires `npx` to launch the remote MCP client. Copy this block as-is into your MCP config file:
+
+```json
+{
+  "mcpServers": {
+    "blogcaster": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://blogcaster-mcp.rrpb2580.workers.dev/mcp"]
+    }
+  }
+}
+```
+
 ## 🛠 Connecting to Cursor (or Cline)
 
 Add this to Cursor's MCP config:

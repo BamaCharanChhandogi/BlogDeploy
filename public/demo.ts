@@ -138,21 +138,18 @@ export const demoHtml = `<!DOCTYPE html>
         <section class="mb-12">
             <h3 class="text-xl font-bold mb-6">Integration Guide</h3>
             <div class="border border-gray-200 rounded-lg p-6">
-                <h4 class="font-semibold mb-4">Claude Desktop</h4>
-                <div class="bg-gray-50 p-4 rounded mb-6">
-                    <p class="text-sm font-mono mb-2">Add to claude_desktop_config.json:</p>
-                    <pre class="text-xs bg-white p-3 rounded border border-gray-200">{
-  "mcpServers": {
-    "blogcaster": {
-      "command": "npx",
-      "args": ["-y", "@blogcaster/mcp-server"],
-      "env": {
-        "BLOGCASTER_URL": "https://your-worker.your-subdomain.workers.dev"
-      }
+
+                                <div class="bg-gray-50 p-4 rounded mb-6">
+                                        <p class="text-sm font-mono mb-2">Exact MCP Servers JSON:</p>
+                                        <pre class="text-xs bg-white p-3 rounded border border-gray-200">{
+    "mcpServers": {
+        "blogcaster": {
+            "command": "npx",
+            "args": ["-y", "mcp-remote", "https://blogcaster-mcp.rrpb2580.workers.dev/mcp"]
+        }
     }
-  }
 }</pre>
-                </div>
+                                </div>
 
                 <h4 class="font-semibold mb-4">Cursor</h4>
                 <div class="bg-gray-50 p-4 rounded mb-6">
